@@ -82,6 +82,7 @@ export interface RealtimeQuote {
   high: number
   low: number
   volume: number
+  yesterday: number
   change: number
   change_pct: number
   time: string

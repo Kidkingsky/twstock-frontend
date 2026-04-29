@@ -7,6 +7,7 @@ import {
   type IChartApi,
   type ISeriesApi,
   type CandlestickSeriesOptions,
+  type Time,
 } from 'lightweight-charts'
 import type { KlineBar } from '../../types/api'
 
@@ -112,7 +113,7 @@ export default function KLineChart({ data, height = 320 }: KLineChartProps) {
     const sorted = [...data].sort((a, b) => a.trade_date.localeCompare(b.trade_date))
 
     const candleData = sorted.map((d) => ({
-      time: d.trade_date as unknown as number,
+      time: d.trade_date as unknown as Time,
       open: d.open,
       high: d.high,
       low: d.low,
@@ -121,11 +122,11 @@ export default function KLineChart({ data, height = 320 }: KLineChartProps) {
 
     const ma20Data = sorted
       .filter((d) => d.ma20 > 0)
-      .map((d) => ({ time: d.trade_date as unknown as number, value: d.ma20 }))
+      .map((d) => ({ time: d.trade_date as unknown as Time, value: d.ma20 }))
 
     const ma60Data = sorted
       .filter((d) => d.ma60 > 0)
-      .map((d) => ({ time: d.trade_date as unknown as number, value: d.ma60 }))
+      .map((d) => ({ time: d.trade_date as unknown as Time, value: d.ma60 }))
 
     candleRef.current.setData(candleData)
     ma20Ref.current?.setData(ma20Data)
