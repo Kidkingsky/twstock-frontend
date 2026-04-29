@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, RefreshCw, Circle } from 'lucide-react'
+import { Search, RefreshCw, Circle, LogOut } from 'lucide-react'
 import clsx from 'clsx'
 import apiClient from '../../api/client'
 import { useSummary } from '../../hooks/useSummary'
 import { fmt, fmtPct, priceColor } from '../../utils/formatters'
+import { useAuthStore, type AuthState } from '../../store/authStore'
 import type { SearchResult } from '../../types/api'
 
 interface HeaderProps {
@@ -13,7 +14,13 @@ interface HeaderProps {
 
 export default function Header({ onStockSelect }: HeaderProps) {
   const navigate = useNavigate()
+  const logout = useAuthStore((s: AuthState) => s.logout)
   const { data: summary, dataUpdatedAt } = useSummary()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login', { replace: true })
+  }
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [showDropdown, setShowDropdown] = useState(false)
@@ -173,6 +180,18 @@ export default function Header({ onStockSelect }: HeaderProps) {
         <RefreshCw size={11} className={clsx(countdown <= 5 ? 'text-tv-accent animate-spin' : '')} />
         <span className="text-[10px] font-mono">{countdown}s</span>
       </div>
+
+      {/* Divider */}
+      <div className="h-5 w-px bg-tv-border" />
+
+      {/* Logout */}
+      <button
+        onClick={handleLogout}
+        title="登出"
+        className="flex items-center gap-1 text-tv-muted hover:text-red-400 transition-colors"
+      >
+        <LogOut size={13} />
+      </button>
     </header>
   )
 }

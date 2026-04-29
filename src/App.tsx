@@ -2,6 +2,8 @@ import { Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Layout from './components/layout/Layout'
+import LoginPage from './pages/LoginPage'
+import ProtectedRoute from './components/common/ProtectedRoute'
 import DashboardPage from './pages/DashboardPage'
 import SignalsPage from './pages/SignalsPage'
 import HotStocksPage from './pages/HotStocksPage'
@@ -51,7 +53,12 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Layout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }>
             <Route index element={
               <Suspense fallback={<PageFallback />}>
                 <DashboardPage />
