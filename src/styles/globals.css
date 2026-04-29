@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #131722;
+    color: #d1d4dc;
+  }
+}
+
+@layer components {
+  .skeleton {
+    @apply bg-tv-border rounded animate-pulse;
+    background: linear-gradient(
+      90deg,
+      #2a2e39 25%,
+      #363a46 50%,
+      #2a2e39 75%
+    );
+    background-size: 400px 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  .tv-card {
+    @apply bg-tv-card border border-tv-border rounded-md;
+  }
+
+  .tv-btn {
+    @apply px-3 py-1.5 rounded text-sm font-medium transition-colors duration-150;
+  }
+
+  .tv-btn-primary {
+    @apply tv-btn bg-tv-accent text-white hover:bg-blue-600;
+  }
+
+  .tv-btn-ghost {
+    @apply tv-btn text-tv-muted hover:text-tv-text hover:bg-tv-border;
+  }
+
+  .tv-btn-active {
+    @apply tv-btn bg-tv-border text-tv-text;
+  }
+
+  .tv-input {
+    @apply bg-tv-border border border-tv-border rounded px-3 py-1.5 text-tv-text text-sm outline-none
+           focus:border-tv-accent focus:ring-1 focus:ring-tv-accent placeholder-tv-muted transition-colors;
+  }
+
+  .price-up {
+    color: #ef5350;
+  }
+
+  .price-down {
+    color: #26a69a;
+  }
+
+  .price-neutral {
+    color: #787b86;
+  }
+
+  .bg-up {
+    background-color: rgba(239, 83, 80, 0.15);
+  }
+
+  .bg-down {
+    background-color: rgba(38, 166, 154, 0.15);
+  }
+
+  .table-row-hover {
+    @apply hover:bg-tv-border cursor-pointer transition-colors duration-100;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+/* Lightweight charts dark theme override */
+.tv-chart-container {
+  width: 100%;
+  height: 100%;
+}
