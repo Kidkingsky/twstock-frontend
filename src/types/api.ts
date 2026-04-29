@@ -297,6 +297,56 @@ export interface BrokerTopStock {
   change_pct: number
 }
 
+// Prediction Score
+export interface PredictionStock {
+  stock_id: string
+  stock_name: string
+  industry: string
+  total_score: number
+  signal: 'STRONG_BUY' | 'BUY' | 'NEUTRAL' | 'SELL' | 'STRONG_SELL'
+  score_tech: number
+  score_chip: number
+  score_fund: number
+  score_macro: number
+  score_momentum: number
+  details: {
+    close: number
+    change_pct: number
+    vol_ratio: number
+    foreign_net: number
+    trust_net: number
+    revenue_yoy: number
+    rsi14: number
+    k_value: number
+  }
+  close: number
+  volume: number
+  change_pct: number
+}
+
+export interface MacroIndicators {
+  trade_date: string
+  sp500: number | null
+  sp500_chg: number | null
+  nasdaq: number | null
+  nasdaq_chg: number | null
+  sox: number | null
+  sox_chg: number | null
+  vix: number | null
+  dxy: number | null
+  dxy_chg: number | null
+  usd_twd: number | null
+  usd_twd_chg: number | null
+  us10y: number | null
+  us10y_chg: number | null
+  crude_oil: number | null
+  crude_oil_chg: number | null
+  gold: number | null
+  gold_chg: number | null
+  market_mood: string
+  mood_color: 'bull' | 'neutral' | 'bear'
+}
+
 // Backtest
 export interface BacktestTrade {
   stock_id: string

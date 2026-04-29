@@ -15,6 +15,7 @@ import {
   FlaskConical,
   ChevronDown,
   ChevronRight,
+  Zap,
 } from 'lucide-react'
 import { useState } from 'react'
 import clsx from 'clsx'
@@ -28,6 +29,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: '大盤總覽', path: '/', icon: <LayoutDashboard size={16} /> },
+  { label: 'AI 評分排行', path: '/prediction', icon: <Zap size={16} /> },
   { label: '偏多訊號', path: '/signals', icon: <TrendingUp size={16} /> },
   { label: '熱門成交', path: '/hot', icon: <Flame size={16} /> },
   { label: '三大法人', path: '/institutional', icon: <Building2 size={16} /> },

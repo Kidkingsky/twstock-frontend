@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'react'
-import { X, ExternalLink, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { X } from 'lucide-react'
 import clsx from 'clsx'
 import { useStockDetail } from '../../hooks/useStockDetail'
 import { useFinancials } from '../../hooks/useFinancials'
+import { usePredictionStock } from '../../hooks/usePrediction'
 import KLineChart from '../charts/KLineChart'
-import { fmt, fmtPct, fmtVol, fmtRevenue, priceColor, fmtDate } from '../../utils/formatters'
+import { fmt, fmtPct, fmtVol, fmtRevenue, priceColor } from '../../utils/formatters'
 
 interface StockModalProps {
   stockId: string
@@ -20,10 +21,29 @@ function StatItem({ label, value, colorClass }: { label: string; value: string; 
   )
 }
 
+// ── 評分雷達條 ─────────────────────────────────────────────────────
+function ScoreBar({ label, score, color }: { label: string; score: number; color: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] text-tv-muted w-8 shrink-0">{label}</span>
+      <div className="flex-1 h-1.5 bg-tv-border rounded-full overflow-hidden">
+        <div className="h-full rounded-full" style={{ width: `${score}%`, backgroundColor: color }} />
+      </div>
+      <span className="text-[10px] font-mono w-6 text-right" style={{ color }}>{score}</span>
+    </div>
+  )
+}
+
 export default function StockModal({ stockId, onClose }: StockModalProps) {
   const { data: detail, isLoading: detailLoading } = useStockDetail(stockId)
   const { data: financials } = useFinancials(stockId)
+  const { data: scoreHistory } = usePredictionStock(stockId)
   const overlayRef = useRef<HTMLDivElement>(null)
+
+  // 取最新評分
+  const latestScore = scoreHistory && Array.isArray(scoreHistory) && scoreHistory.length > 0
+    ? scoreHistory[scoreHistory.length - 1]
+    : null
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -94,6 +114,43 @@ export default function StockModal({ stockId, onClose }: StockModalProps) {
               <StatItem label="最低" value={fmt(rt.low)} colorClass="price-down" />
               <StatItem label="昨收" value={fmt(rt.yesterday)} />
               <StatItem label="成交量" value={fmtVol(rt.volume)} />
+            </div>
+          )}
+
+          {/* AI Score Card */}
+          {latestScore && (
+            <div className="tv-card p-3">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-xs font-semibold text-tv-text">AI 綜合評分</h4>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-tv-muted">{latestScore.trade_date}</span>
+                  <span className={clsx(
+                    'text-xs font-bold px-2 py-0.5 rounded',
+                    latestScore.total_score >= 70 ? 'bg-tv-up/20 text-tv-up' :
+                    latestScore.total_score >= 60 ? 'bg-tv-accent/20 text-tv-accent' :
+                    latestScore.total_score >= 50 ? 'bg-tv-border text-tv-muted' :
+                    'bg-tv-down/20 text-tv-down'
+                  )}>
+                    {latestScore.total_score} 分
+                  </span>
+                  <span className={clsx(
+                    'text-[10px] px-1.5 py-0.5 rounded',
+                    latestScore.signal === 'STRONG_BUY' ? 'bg-tv-up/20 text-tv-up' :
+                    latestScore.signal === 'BUY' ? 'bg-tv-up/10 text-tv-up/80' :
+                    latestScore.signal === 'SELL' ? 'bg-tv-down/10 text-tv-down/80' :
+                    'bg-tv-border text-tv-muted'
+                  )}>
+                    {{ STRONG_BUY: '強買', BUY: '買入', NEUTRAL: '中性', SELL: '賣出', STRONG_SELL: '強賣' }[latestScore.signal as string] ?? latestScore.signal}
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <ScoreBar label="技術" score={latestScore.score_tech} color="#2962ff" />
+                <ScoreBar label="籌碼" score={latestScore.score_chip} color="#ff9800" />
+                <ScoreBar label="基本" score={latestScore.score_fund} color="#26a69a" />
+                <ScoreBar label="總體" score={latestScore.score_macro} color="#9c27b0" />
+                <ScoreBar label="動能" score={latestScore.score_momentum} color="#e91e63" />
+              </div>
             </div>
           )}
 

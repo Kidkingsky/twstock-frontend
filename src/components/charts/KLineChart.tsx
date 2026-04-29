@@ -48,10 +48,17 @@ export default function KLineChart({ data, height = 320 }: KLineChartProps) {
       },
       timeScale: {
         borderColor: '#2a2e39',
-        timeVisible: true,
+        timeVisible: false,
         secondsVisible: false,
-        tickMarkFormatter: (time: number) => {
-          const d = new Date(time * 1000)
+        tickMarkFormatter: (time: unknown) => {
+          // trade_date is "YYYY-MM-DD" string — parse directly, don't multiply
+          const s = String(time)
+          const parts = s.split('-')
+          if (parts.length === 3) {
+            return `${parseInt(parts[1])}/${parseInt(parts[2])}`
+          }
+          // fallback for unix timestamp
+          const d = new Date(Number(time) * 1000)
           return `${d.getMonth() + 1}/${d.getDate()}`
         },
       },

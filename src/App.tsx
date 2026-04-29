@@ -17,6 +17,7 @@ import GovBankPage from './pages/GovBankPage'
 import BrokerTopPage from './pages/BrokerTopPage'
 import MarginAlertPage from './pages/MarginAlertPage'
 import BacktestPage from './pages/BacktestPage'
+import PredictionPage from './pages/PredictionPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -123,6 +124,11 @@ export default function App() {
             <Route path="backtest" element={
               <Suspense fallback={<PageFallback />}>
                 <BacktestPage />
+              </Suspense>
+            } />
+            <Route path="prediction" element={
+              <Suspense fallback={<PageFallback />}>
+                <PredictionPage />
               </Suspense>
             } />
             <Route path="*" element={<Navigate to="/" replace />} />
