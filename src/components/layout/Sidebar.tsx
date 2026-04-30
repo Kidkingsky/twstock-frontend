@@ -16,6 +16,7 @@ import {
   ChevronDown,
   ChevronRight,
   Zap,
+  Wallet,
 } from 'lucide-react'
 import { useState } from 'react'
 import clsx from 'clsx'
@@ -59,6 +60,7 @@ const navItems: NavItem[] = [
   { label: '分點追蹤', path: '/broker', icon: <Users size={16} /> },
   { label: '融資警示', path: '/margin', icon: <AlertTriangle size={16} /> },
   { label: '策略回測', path: '/backtest', icon: <FlaskConical size={16} /> },
+  { label: '我的投資組合', path: '/portfolio', icon: <Wallet size={16} /> },
 ]
 
 export default function Sidebar({ open = false, onClose }: SidebarProps) {

@@ -18,6 +18,7 @@ import BrokerTopPage from './pages/BrokerTopPage'
 import MarginAlertPage from './pages/MarginAlertPage'
 import BacktestPage from './pages/BacktestPage'
 import PredictionPage from './pages/PredictionPage'
+import PortfolioPage from './pages/PortfolioPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -129,6 +130,11 @@ export default function App() {
             <Route path="prediction" element={
               <Suspense fallback={<PageFallback />}>
                 <PredictionPage />
+              </Suspense>
+            } />
+            <Route path="portfolio" element={
+              <Suspense fallback={<PageFallback />}>
+                <PortfolioPage />
               </Suspense>
             } />
             <Route path="*" element={<Navigate to="/" replace />} />
