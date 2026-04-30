@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, RefreshCw, Circle, LogOut } from 'lucide-react'
+import { Search, RefreshCw, Circle, LogOut, Menu } from 'lucide-react'
 import clsx from 'clsx'
 import apiClient from '../../api/client'
 import { useSummary } from '../../hooks/useSummary'
@@ -10,9 +10,10 @@ import type { SearchResult } from '../../types/api'
 
 interface HeaderProps {
   onStockSelect?: (stockId: string) => void
+  onMenuClick?: () => void
 }
 
-export default function Header({ onStockSelect }: HeaderProps) {
+export default function Header({ onStockSelect, onMenuClick }: HeaderProps) {
   const navigate = useNavigate()
   const logout = useAuthStore((s: AuthState) => s.logout)
   const { data: summary, dataUpdatedAt } = useSummary()
@@ -21,6 +22,7 @@ export default function Header({ onStockSelect }: HeaderProps) {
     logout()
     navigate('/login', { replace: true })
   }
+
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [showDropdown, setShowDropdown] = useState(false)
@@ -28,7 +30,6 @@ export default function Header({ onStockSelect }: HeaderProps) {
   const searchRef = useRef<HTMLDivElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Countdown timer
   useEffect(() => {
     const interval = setInterval(() => {
       if (dataUpdatedAt) {
@@ -39,7 +40,6 @@ export default function Header({ onStockSelect }: HeaderProps) {
     return () => clearInterval(interval)
   }, [dataUpdatedAt])
 
-  // Search debounce
   const handleSearch = useCallback((q: string) => {
     setQuery(q)
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -59,7 +59,6 @@ export default function Header({ onStockSelect }: HeaderProps) {
     }, 300)
   }, [])
 
-  // Click outside to close
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
@@ -83,115 +82,121 @@ export default function Header({ onStockSelect }: HeaderProps) {
   const isMarketOpen = summary?.market_open ?? false
 
   return (
-    <header className="h-12 bg-tv-card border-b border-tv-border flex items-center px-4 gap-4 shrink-0">
-      {/* Search */}
-      <div ref={searchRef} className="relative flex-shrink-0">
-        <div className="flex items-center bg-tv-border rounded px-2.5 py-1 gap-2 w-64">
-          <Search size={13} className="text-tv-muted" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => handleSearch(e.target.value)}
-            onFocus={() => query.length > 0 && setShowDropdown(true)}
-            placeholder="搜尋股票代號或名稱..."
-            className="bg-transparent text-tv-text text-xs outline-none flex-1 placeholder-tv-muted"
-          />
-          {query && (
-            <button
-              onClick={() => { setQuery(''); setResults([]); setShowDropdown(false) }}
-              className="text-tv-muted hover:text-tv-text text-xs leading-none"
-            >
-              ×
-            </button>
+    <header className="border-b border-tv-border bg-tv-card px-3 py-3 sm:px-4">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={onMenuClick}
+            className="inline-flex h-9 w-9 items-center justify-center rounded border border-tv-border text-tv-muted transition-colors hover:bg-tv-border hover:text-tv-text md:hidden"
+            aria-label="開啟側邊選單"
+          >
+            <Menu size={18} />
+          </button>
+
+          <div ref={searchRef} className="relative min-w-0 flex-1 lg:max-w-sm">
+            <div className="flex w-full items-center gap-2 rounded border border-tv-border bg-tv-border px-2.5 py-2">
+              <Search size={13} className="shrink-0 text-tv-muted" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => handleSearch(e.target.value)}
+                onFocus={() => query.length > 0 && setShowDropdown(true)}
+                placeholder="搜尋股票代號或名稱..."
+                className="min-w-0 flex-1 bg-transparent text-xs text-tv-text outline-none placeholder-tv-muted"
+              />
+              {query && (
+                <button
+                  onClick={() => {
+                    setQuery('')
+                    setResults([])
+                    setShowDropdown(false)
+                  }}
+                  className="text-xs leading-none text-tv-muted hover:text-tv-text"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+            {showDropdown && results.length > 0 && (
+              <div className="absolute left-0 top-full z-50 mt-1 max-h-72 w-full overflow-y-auto rounded border border-tv-border bg-tv-card shadow-xl sm:w-80">
+                {results.map((r) => (
+                  <button
+                    key={r.stock_id}
+                    onClick={() => handleSelectStock(r)}
+                    className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-tv-border"
+                  >
+                    <span className="w-14 shrink-0 font-mono text-xs text-tv-accent">{r.stock_id}</span>
+                    <span className="flex-1 text-xs text-tv-text">{r.stock_name}</span>
+                    <span className="shrink-0 text-[10px] text-tv-muted">{r.market}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={handleLogout}
+            title="登出"
+            className="ml-auto inline-flex h-9 w-9 items-center justify-center rounded border border-tv-border text-tv-muted transition-colors hover:border-red-400/40 hover:text-red-400 lg:hidden"
+          >
+            <LogOut size={14} />
+          </button>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs sm:gap-x-4">
+          <div className="flex items-center gap-1.5 rounded-full bg-tv-bg/70 px-2.5 py-1">
+            <Circle
+              size={8}
+              className={clsx(isMarketOpen ? 'text-tv-down fill-tv-down' : 'text-tv-muted fill-tv-muted')}
+            />
+            <span className={clsx(isMarketOpen ? 'text-tv-down' : 'text-tv-muted')}>
+              {isMarketOpen ? '交易中' : '已收盤'}
+            </span>
+          </div>
+
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="text-tv-muted">加權指數</span>
+            <span className={clsx('font-mono text-sm font-semibold', taiexColor)}>
+              {taiex ? fmt(taiex.close, 2) : '-'}
+            </span>
+            <span className={clsx('font-mono', taiexColor)}>
+              {taiex ? fmtPct(taiex.change_pct) : '-'}
+            </span>
+          </div>
+
+          {summary && (
+            <div className="flex flex-wrap items-center gap-3 text-[11px] sm:text-xs">
+              <div className="flex items-center gap-1.5">
+                <span className="text-tv-muted">偏多</span>
+                <span className="font-semibold text-tv-up">{summary.signals.bullish}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-tv-muted">反彈</span>
+                <span className="font-semibold text-tv-warn">{summary.signals.rebound}</span>
+              </div>
+            </div>
           )}
-        </div>
-        {showDropdown && results.length > 0 && (
-          <div className="absolute top-full left-0 mt-1 w-80 bg-tv-card border border-tv-border rounded shadow-xl z-50 max-h-72 overflow-y-auto">
-            {results.map((r) => (
-              <button
-                key={r.stock_id}
-                onClick={() => handleSelectStock(r)}
-                className="w-full flex items-center gap-3 px-3 py-2 hover:bg-tv-border text-left transition-colors"
-              >
-                <span className="text-tv-accent font-mono text-xs w-14 shrink-0">{r.stock_id}</span>
-                <span className="text-tv-text text-xs flex-1">{r.stock_name}</span>
-                <span className="text-tv-muted text-[10px] shrink-0">{r.market}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
 
-      {/* Market status */}
-      <div className="flex items-center gap-1.5">
-        <Circle
-          size={8}
-          className={clsx(isMarketOpen ? 'text-tv-down fill-tv-down' : 'text-tv-muted fill-tv-muted')}
-        />
-        <span className={clsx('text-xs', isMarketOpen ? 'text-tv-down' : 'text-tv-muted')}>
-          {isMarketOpen ? '交易中' : '已收盤'}
-        </span>
-      </div>
+          <div className="ml-auto flex flex-wrap items-center justify-end gap-x-3 gap-y-2 text-[10px] text-tv-muted sm:text-xs">
+            {summary?.date && <span>資料日期：{summary.date}</span>}
 
-      {/* Divider */}
-      <div className="h-5 w-px bg-tv-border" />
+            <div className="flex items-center gap-1.5 rounded-full bg-tv-bg/70 px-2.5 py-1">
+              <RefreshCw size={11} className={clsx(countdown <= 5 ? 'animate-spin text-tv-accent' : '')} />
+              <span className="font-mono">{countdown}s</span>
+            </div>
 
-      {/* TAIEX */}
-      <div className="flex items-center gap-2">
-        <span className="text-tv-muted text-xs">加權指數</span>
-        <span className={clsx('text-sm font-semibold font-mono', taiexColor)}>
-          {taiex ? fmt(taiex.close, 2) : '-'}
-        </span>
-        <span className={clsx('text-xs font-mono', taiexColor)}>
-          {taiex ? fmtPct(taiex.change_pct) : '-'}
-        </span>
-      </div>
-
-      {/* Divider */}
-      <div className="h-5 w-px bg-tv-border" />
-
-      {/* Signal counts */}
-      {summary && (
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-tv-muted">偏多</span>
-            <span className="text-xs font-semibold text-tv-up">{summary.signals.bullish}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-tv-muted">反彈</span>
-            <span className="text-xs font-semibold text-tv-warn">{summary.signals.rebound}</span>
+            <button
+              onClick={handleLogout}
+              title="登出"
+              className="hidden items-center gap-1 rounded border border-tv-border px-2.5 py-1 text-tv-muted transition-colors hover:border-red-400/40 hover:text-red-400 lg:inline-flex"
+            >
+              <LogOut size={13} />
+              <span>登出</span>
+            </button>
           </div>
         </div>
-      )}
-
-      {/* Spacer */}
-      <div className="flex-1" />
-
-      {/* Date */}
-      {summary?.date && (
-        <span className="text-[10px] text-tv-muted">資料日期：{summary.date}</span>
-      )}
-
-      {/* Divider */}
-      <div className="h-5 w-px bg-tv-border" />
-
-      {/* Refresh countdown */}
-      <div className="flex items-center gap-1.5 text-tv-muted">
-        <RefreshCw size={11} className={clsx(countdown <= 5 ? 'text-tv-accent animate-spin' : '')} />
-        <span className="text-[10px] font-mono">{countdown}s</span>
       </div>
-
-      {/* Divider */}
-      <div className="h-5 w-px bg-tv-border" />
-
-      {/* Logout */}
-      <button
-        onClick={handleLogout}
-        title="登出"
-        className="flex items-center gap-1 text-tv-muted hover:text-red-400 transition-colors"
-      >
-        <LogOut size={13} />
-      </button>
     </header>
   )
 }

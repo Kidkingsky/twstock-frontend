@@ -20,6 +20,11 @@ import {
 import { useState } from 'react'
 import clsx from 'clsx'
 
+interface SidebarProps {
+  open?: boolean
+  onClose?: () => void
+}
+
 interface NavItem {
   label: string
   path: string
@@ -56,96 +61,113 @@ const navItems: NavItem[] = [
   { label: '策略回測', path: '/backtest', icon: <FlaskConical size={16} /> },
 ]
 
-export default function Sidebar() {
+export default function Sidebar({ open = false, onClose }: SidebarProps) {
   const location = useLocation()
   const [strategyOpen, setStrategyOpen] = useState(
     location.pathname.startsWith('/strategy')
   )
 
   return (
-    <aside className="w-[220px] min-w-[220px] h-full bg-tv-card border-r border-tv-border flex flex-col overflow-y-auto">
-      {/* Logo */}
-      <div className="px-4 py-4 border-b border-tv-border flex items-center gap-2">
-        <div className="w-7 h-7 rounded bg-tv-accent flex items-center justify-center text-white font-bold text-sm">
-          台
+    <>
+      <button
+        type="button"
+        aria-label="關閉側邊選單"
+        onClick={onClose}
+        className={clsx(
+          'fixed inset-0 z-30 bg-black/50 transition-opacity md:hidden',
+          open ? 'opacity-100' : 'pointer-events-none opacity-0'
+        )}
+      />
+
+      <aside
+        className={clsx(
+          'fixed inset-y-0 left-0 z-40 flex h-full w-[260px] max-w-[85vw] flex-col overflow-y-auto border-r border-tv-border bg-tv-card shadow-2xl transition-transform duration-200 md:static md:z-auto md:w-[220px] md:min-w-[220px] md:translate-x-0 md:shadow-none',
+          open ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        <div className="flex items-center gap-2 border-b border-tv-border px-4 py-4">
+          <div className="flex h-7 w-7 items-center justify-center rounded bg-tv-accent text-sm font-bold text-white">
+            台
+          </div>
+          <span className="text-sm font-semibold tracking-wide text-tv-text">台股儀表板</span>
         </div>
-        <span className="font-semibold text-tv-text text-sm tracking-wide">台股儀表板</span>
-      </div>
 
-      {/* Nav */}
-      <nav className="flex-1 py-2">
-        {navItems.map((item) => {
-          if (item.children) {
-            const isParentActive = location.pathname.startsWith('/strategy')
+        <nav className="flex-1 py-2">
+          {navItems.map((item) => {
+            if (item.children) {
+              const isParentActive = location.pathname.startsWith('/strategy')
+              return (
+                <div key={item.path}>
+                  <button
+                    onClick={() => setStrategyOpen((v) => !v)}
+                    className={clsx(
+                      'flex w-full items-center gap-2.5 px-4 py-2 text-sm transition-colors duration-100',
+                      isParentActive
+                        ? 'bg-tv-border text-tv-text'
+                        : 'text-tv-muted hover:bg-tv-border/50 hover:text-tv-text'
+                    )}
+                  >
+                    <span className="text-tv-muted">{item.icon}</span>
+                    <span className="flex-1 text-left">{item.label}</span>
+                    {strategyOpen ? (
+                      <ChevronDown size={12} className="text-tv-muted" />
+                    ) : (
+                      <ChevronRight size={12} className="text-tv-muted" />
+                    )}
+                  </button>
+
+                  {strategyOpen && (
+                    <div className="bg-tv-bg/40">
+                      {item.children.map((child) => (
+                        <NavLink
+                          key={child.path}
+                          to={child.path}
+                          onClick={onClose}
+                          className={({ isActive }) =>
+                            clsx(
+                              'flex items-center py-2 pl-10 pr-4 text-xs transition-colors duration-100',
+                              isActive
+                                ? 'border-r-2 border-tv-accent bg-tv-accent/10 text-tv-accent'
+                                : 'text-tv-muted hover:bg-tv-border/30 hover:text-tv-text'
+                            )
+                          }
+                        >
+                          {child.label}
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            }
+
             return (
-              <div key={item.path}>
-                <button
-                  onClick={() => setStrategyOpen((v) => !v)}
-                  className={clsx(
-                    'w-full flex items-center gap-2.5 px-4 py-2 text-sm transition-colors duration-100',
-                    isParentActive
-                      ? 'text-tv-text bg-tv-border'
-                      : 'text-tv-muted hover:text-tv-text hover:bg-tv-border/50'
-                  )}
-                >
-                  <span className="text-tv-muted">{item.icon}</span>
-                  <span className="flex-1 text-left">{item.label}</span>
-                  {strategyOpen ? (
-                    <ChevronDown size={12} className="text-tv-muted" />
-                  ) : (
-                    <ChevronRight size={12} className="text-tv-muted" />
-                  )}
-                </button>
-                {strategyOpen && (
-                  <div className="bg-tv-bg/40">
-                    {item.children.map((child) => (
-                      <NavLink
-                        key={child.path}
-                        to={child.path}
-                        className={({ isActive }) =>
-                          clsx(
-                            'flex items-center pl-10 pr-4 py-1.5 text-xs transition-colors duration-100',
-                            isActive
-                              ? 'text-tv-accent bg-tv-accent/10 border-r-2 border-tv-accent'
-                              : 'text-tv-muted hover:text-tv-text hover:bg-tv-border/30'
-                          )
-                        }
-                      >
-                        {child.label}
-                      </NavLink>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.path === '/'}
+                onClick={onClose}
+                className={({ isActive }) =>
+                  clsx(
+                    'flex items-center gap-2.5 px-4 py-2 text-sm transition-colors duration-100',
+                    isActive
+                      ? 'border-r-2 border-tv-accent bg-tv-accent/10 text-tv-accent'
+                      : 'text-tv-muted hover:bg-tv-border/50 hover:text-tv-text'
+                  )
+                }
+              >
+                <span>{item.icon}</span>
+                <span>{item.label}</span>
+              </NavLink>
             )
-          }
+          })}
+        </nav>
 
-          return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.path === '/'}
-              className={({ isActive }) =>
-                clsx(
-                  'flex items-center gap-2.5 px-4 py-2 text-sm transition-colors duration-100',
-                  isActive
-                    ? 'text-tv-accent bg-tv-accent/10 border-r-2 border-tv-accent'
-                    : 'text-tv-muted hover:text-tv-text hover:bg-tv-border/50'
-                )
-              }
-            >
-              <span>{item.icon}</span>
-              <span>{item.label}</span>
-            </NavLink>
-          )
-        })}
-      </nav>
-
-      {/* Footer */}
-      <div className="px-4 py-3 border-t border-tv-border">
-        <p className="text-[10px] text-tv-muted">台股智能選股系統</p>
-        <p className="text-[10px] text-tv-muted/60">v0.1.0</p>
-      </div>
-    </aside>
+        <div className="border-t border-tv-border px-4 py-3">
+          <p className="text-[10px] text-tv-muted">台股智能選股系統</p>
+          <p className="text-[10px] text-tv-muted/60">v0.1.0</p>
+        </div>
+      </aside>
+    </>
   )
 }
