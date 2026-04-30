@@ -143,9 +143,9 @@ export default function DashboardPage() {
   const leftData = leftTab === 'bullish' ? bullishSignals : leftTab === 'rebound' ? reboundSignals : undefined
 
   return (
-    <div className="flex flex-col gap-4 h-full">
+    <div className="flex h-full flex-col gap-4">
       {/* Stat Cards */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="加權指數"
           value={taiex ? fmt(taiex.close, 2) : '-'}
@@ -177,10 +177,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Main panels */}
-      <div className="flex gap-3 flex-1 min-h-0">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 xl:grid-cols-2">
         {/* Left panel */}
         <div className="flex-1 tv-card flex flex-col min-h-0">
-          <div className="flex items-center gap-1 px-4 pt-3 pb-0 border-b border-tv-border shrink-0">
+          <div className="flex flex-wrap items-center gap-1 border-b border-tv-border px-3 pb-0 pt-3 shrink-0 sm:px-4">
             {([
               ['bullish', '偏多訊號', <TrendingUp size={12} />],
               ['rebound', '短線反彈', <Activity size={12} />],
@@ -190,7 +190,7 @@ export default function DashboardPage() {
                 key={tab}
                 onClick={() => setLeftTab(tab)}
                 className={clsx(
-                  'flex items-center gap-1.5 px-3 py-2 text-xs border-b-2 transition-colors -mb-px',
+                  'flex items-center gap-1.5 whitespace-nowrap rounded-t px-3 py-2 text-xs border-b-2 transition-colors -mb-px',
                   leftTab === tab
                     ? 'border-tv-accent text-tv-text'
                     : 'border-transparent text-tv-muted hover:text-tv-text'
@@ -226,7 +226,7 @@ export default function DashboardPage() {
 
         {/* Right panel */}
         <div className="flex-1 tv-card flex flex-col min-h-0">
-          <div className="flex items-center gap-1 px-4 pt-3 pb-0 border-b border-tv-border shrink-0">
+          <div className="flex flex-wrap items-center gap-1 border-b border-tv-border px-3 pb-0 pt-3 shrink-0 sm:px-4">
             {([
               ['hot', '熱門成交', <Flame size={12} />],
               ['foreign', '外資買超', <Building2 size={12} />],
@@ -237,7 +237,7 @@ export default function DashboardPage() {
                 key={tab}
                 onClick={() => setRightTab(tab)}
                 className={clsx(
-                  'flex items-center gap-1.5 px-3 py-2 text-xs border-b-2 transition-colors -mb-px',
+                  'flex items-center gap-1.5 whitespace-nowrap rounded-t px-3 py-2 text-xs border-b-2 transition-colors -mb-px',
                   rightTab === tab
                     ? 'border-tv-accent text-tv-text'
                     : 'border-transparent text-tv-muted hover:text-tv-text'

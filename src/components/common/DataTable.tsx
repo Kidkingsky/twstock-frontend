@@ -46,17 +46,17 @@ export default function DataTable<T>({
 }: DataTableProps<T>) {
   return (
     <div
-      className={clsx('overflow-auto', className)}
+      className={clsx('overflow-x-auto overflow-y-auto rounded-md', className)}
       style={maxHeight ? { maxHeight } : undefined}
     >
-      <table className="w-full text-xs border-collapse">
+      <table className="min-w-full border-collapse text-xs md:w-full">
         <thead className="sticky top-0 z-10">
           <tr className="bg-tv-card border-b border-tv-border">
             {columns.map((col) => (
               <th
                 key={col.key}
                 className={clsx(
-                  'px-3 py-2 text-tv-muted font-medium whitespace-nowrap',
+                  'px-2 py-2 text-tv-muted font-medium whitespace-nowrap sm:px-3',
                   col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left',
                   col.width ? `w-[${col.width}]` : ''
                 )}
@@ -92,7 +92,7 @@ export default function DataTable<T>({
                   <td
                     key={col.key}
                     className={clsx(
-                      'px-3 py-1.5 text-tv-text whitespace-nowrap',
+                      'px-2 py-2 text-tv-text whitespace-nowrap sm:px-3',
                       col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
                     )}
                   >

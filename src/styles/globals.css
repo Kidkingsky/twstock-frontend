@@ -7,11 +7,22 @@
     font-size: 13px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-color: #131722;
   }
 
   body {
     background-color: #131722;
     color: #d1d4dc;
+  }
+
+  body,
+  #root {
+    min-height: 100vh;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #4b5563 #1f2937;
   }
 }
 
