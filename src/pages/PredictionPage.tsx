@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import clsx from 'clsx'
 import { useOutletContext } from 'react-router-dom'
-import { TrendingUp, TrendingDown, Minus, Activity, Globe, Zap } from 'lucide-react'
+import { Activity, Globe, Zap, Radio } from 'lucide-react'
 import { usePredictionTop, useMacroIndicators } from '../hooks/usePrediction'
+import { useLiveQuotes } from '../hooks/useLiveQuotes'
+import { useSummary } from '../hooks/useSummary'
 import { fmt, fmtPct, fmtVol, priceColor } from '../utils/formatters'
-import type { PredictionStock } from '../types/api'
+import type { PredictionStock, LiveQuote } from '../types/api'
 
 // ── 評分雷達條 ─────────────────────────────────────────────────────
 function ScoreBar({ label, score, color }: { label: string; score: number; color: string }) {
@@ -109,7 +111,12 @@ function MacroCard() {
 }
 
 // ── 個股評分卡 ───────────────────────────────────────────────────
-function StockScoreRow({ stock, onOpen }: { stock: PredictionStock; onOpen: (id: string) => void }) {
+function StockScoreRow({ stock, onOpen, live, isMarketOpen }: {
+  stock: PredictionStock
+  onOpen: (id: string) => void
+  live?: LiveQuote
+  isMarketOpen: boolean
+}) {
   const [expanded, setExpanded] = useState(false)
 
   return (
@@ -136,9 +143,20 @@ function StockScoreRow({ stock, onOpen }: { stock: PredictionStock; onOpen: (id:
         <td className="px-3 py-2">
           <SignalBadge signal={stock.signal} />
         </td>
-        <td className="px-3 py-2 text-right font-mono text-xs text-tv-text">{fmt(stock.close, 2)}</td>
-        <td className={clsx('px-3 py-2 text-right font-mono text-xs', priceColor(stock.change_pct))}>
-          {fmtPct(stock.change_pct)}
+        <td className="px-3 py-2 text-right">
+          <div className="flex flex-col items-end">
+            <div className="flex items-center gap-1">
+              <span className="font-mono text-xs text-tv-text">
+                {fmt(live?.price ?? stock.close, 2)}
+              </span>
+              {isMarketOpen && live?.price && (
+                <span className="w-1.5 h-1.5 rounded-full bg-tv-up animate-pulse" />
+              )}
+            </div>
+          </div>
+        </td>
+        <td className={clsx('px-3 py-2 text-right font-mono text-xs', priceColor(isMarketOpen && live?.change_pct != null ? live.change_pct : stock.change_pct))}>
+          {fmtPct(isMarketOpen && live?.change_pct != null ? live.change_pct : stock.change_pct)}
         </td>
         <td className="px-3 py-2 hidden md:table-cell">
           {/* Mini score bars */}
@@ -214,11 +232,19 @@ export default function PredictionPage() {
   const [signal, setSignal] = useState('')
   const [minScore, setMinScore] = useState(55)
 
+  const { data: summary } = useSummary()
+  const isMarketOpen = summary?.market_open ?? false
+
   const { data: stocks, isLoading } = usePredictionTop({
     signal: signal || undefined,
     minScore,
     limit: 100,
   })
+
+  // 取前100高分股票的即時報價
+  const topIds = useMemo(() => (stocks ?? []).slice(0, 100).map(s => s.stock_id), [stocks])
+  const { data: liveData } = useLiveQuotes(topIds)
+  const liveMap: Record<string, LiveQuote> = useMemo(() => liveData ?? {}, [liveData])
 
   return (
     <div className="flex flex-col gap-3 p-2">
@@ -230,6 +256,11 @@ export default function PredictionPage() {
           <span className="text-[10px] text-tv-muted bg-tv-border px-1.5 py-0.5 rounded">
             技術 25% + 籌碼 35% + 基本 20% + 總體 10% + 動能 10%
           </span>
+          {isMarketOpen && (
+            <span className="flex items-center gap-1 text-[10px] text-tv-up px-1.5 py-0.5 rounded bg-tv-up/10 border border-tv-up/20">
+              <Radio size={10} className="animate-pulse" />盤中即時
+            </span>
+          )}
         </div>
         {stocks && (
           <span className="text-[10px] text-tv-muted">共 {stocks.length} 支</span>
@@ -306,7 +337,13 @@ export default function PredictionPage() {
               </thead>
               <tbody>
                 {stocks.map((s) => (
-                  <StockScoreRow key={s.stock_id} stock={s} onOpen={openStock} />
+                  <StockScoreRow
+                    key={s.stock_id}
+                    stock={s}
+                    onOpen={openStock}
+                    live={liveMap[s.stock_id]}
+                    isMarketOpen={isMarketOpen}
+                  />
                 ))}
               </tbody>
             </table>
