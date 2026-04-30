@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import clsx from 'clsx'
-import { FlaskConical, TrendingUp, CheckCircle, XCircle, Clock, X } from 'lucide-react'
-import { usePaperTrades, usePaperPerformance, useClosePaperTrade, type PaperTrade, type SignalStats } from '../hooks/usePaperTrade'
+import { FlaskConical, TrendingUp, CheckCircle, XCircle, Clock, X, Trash2 } from 'lucide-react'
+import { usePaperTrades, usePaperPerformance, useClosePaperTrade, useDeletePaperTrade, type PaperTrade, type SignalStats } from '../hooks/usePaperTrade'
 import { fmt, fmtPct, priceColor } from '../utils/formatters'
 
 // ── 訊號顏色 ─────────────────────────────────────────────────────
@@ -123,7 +123,8 @@ function CloseDialog({ trade, onClose }: { trade: PaperTrade; onClose: () => voi
 
 // ── 持倉中 Table ─────────────────────────────────────────────────
 function OpenTradesTable({ trades }: { trades: PaperTrade[] }) {
-  const [closing, setClosing] = useState<PaperTrade | null>(null)
+  const [closing, setClosing]   = useState<PaperTrade | null>(null)
+  const { mutate: deleteTrade } = useDeletePaperTrade()
 
   if (!trades.length) return (
     <div className="tv-card p-6 text-center text-tv-muted text-sm">
@@ -190,10 +191,19 @@ function OpenTradesTable({ trades }: { trades: PaperTrade[] }) {
                       </span>
                     </td>
                     <td className="px-3 py-2.5 text-center">
-                      <button onClick={() => setClosing(t)}
-                        className="px-2 py-0.5 text-[10px] rounded bg-tv-border hover:bg-tv-accent/20 hover:text-tv-accent text-tv-muted transition-colors">
-                        平倉
-                      </button>
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button onClick={() => setClosing(t)}
+                          className="px-2 py-0.5 text-[10px] rounded bg-tv-border hover:bg-tv-accent/20 hover:text-tv-accent text-tv-muted transition-colors">
+                          平倉
+                        </button>
+                        <button
+                          onClick={() => { if (confirm(`確定刪除 ${t.stock_name} 模擬單？`)) deleteTrade(t.id) }}
+                          className="p-0.5 rounded text-tv-muted hover:text-tv-down hover:bg-tv-down/10 transition-colors"
+                          title="刪除"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 )
@@ -209,6 +219,7 @@ function OpenTradesTable({ trades }: { trades: PaperTrade[] }) {
 
 // ── 已平倉 Table ─────────────────────────────────────────────────
 function ClosedTradesTable({ trades }: { trades: PaperTrade[] }) {
+  const { mutate: deleteTrade } = useDeletePaperTrade()
   if (!trades.length) return null
   return (
     <div className="tv-card overflow-hidden">
@@ -228,6 +239,7 @@ function ClosedTradesTable({ trades }: { trades: PaperTrade[] }) {
               <th className="text-right px-3 py-2 font-medium">報酬率</th>
               <th className="text-center px-3 py-2 font-medium">結果</th>
               <th className="text-right px-3 py-2 font-medium">出場日</th>
+              <th className="px-3 py-2 font-medium"></th>
             </tr>
           </thead>
           <tbody>
@@ -253,6 +265,15 @@ function ClosedTradesTable({ trades }: { trades: PaperTrade[] }) {
                   )}
                 </td>
                 <td className="px-3 py-2.5 text-right text-[10px] text-tv-muted">{t.exit_date ?? '-'}</td>
+                <td className="px-3 py-2.5 text-center">
+                  <button
+                    onClick={() => { if (confirm(`確定刪除 ${t.stock_name} 紀錄？`)) deleteTrade(t.id) }}
+                    className="p-0.5 rounded text-tv-muted hover:text-tv-down hover:bg-tv-down/10 transition-colors"
+                    title="刪除"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

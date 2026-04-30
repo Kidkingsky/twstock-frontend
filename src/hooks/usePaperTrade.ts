@@ -99,3 +99,17 @@ export function useClosePaperTrade() {
     },
   })
 }
+
+export function useDeletePaperTrade() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const { data } = await apiClient.delete(`/api/paper-trade/${id}`)
+      return data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['paper-trades'] })
+      qc.invalidateQueries({ queryKey: ['paper-performance'] })
+    },
+  })
+}
