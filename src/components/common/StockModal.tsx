@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { X } from 'lucide-react'
+import { X, ExternalLink } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
 import { useStockDetail } from '../../hooks/useStockDetail'
 import { useFinancials } from '../../hooks/useFinancials'
@@ -35,6 +36,7 @@ function ScoreBar({ label, score, color }: { label: string; score: number; color
 }
 
 export default function StockModal({ stockId, onClose }: StockModalProps) {
+  const navigate = useNavigate()
   const { data: detail, isLoading: detailLoading } = useStockDetail(stockId)
   const { data: financials } = useFinancials(stockId)
   const { data: scoreHistory } = usePredictionStock(stockId)
@@ -96,12 +98,22 @@ export default function StockModal({ stockId, onClose }: StockModalProps) {
               </div>
             )}
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded hover:bg-tv-border text-tv-muted hover:text-tv-text transition-colors"
-          >
-            <X size={16} />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => { onClose(); navigate(`/stock/${stockId}`) }}
+              title="開啟完整詳情頁（含 MACD / RSI / 估值）"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] bg-tv-accent/10 text-tv-accent border border-tv-accent/30 hover:bg-tv-accent/20 transition-colors"
+            >
+              <ExternalLink size={11} />
+              詳情頁
+            </button>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded hover:bg-tv-border text-tv-muted hover:text-tv-text transition-colors"
+            >
+              <X size={16} />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
