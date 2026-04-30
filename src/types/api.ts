@@ -298,12 +298,17 @@ export interface BrokerTopStock {
 }
 
 // Prediction Score
+export type PredictionSignal = 'STRONG_BUY' | 'BUY' | 'WATCH' | 'NEUTRAL' | 'SELL' | 'STRONG_SELL'
+
 export interface PredictionStock {
   stock_id: string
   stock_name: string
   industry: string
+  // 層一：標的品質分
   total_score: number
-  signal: 'STRONG_BUY' | 'BUY' | 'NEUTRAL' | 'SELL' | 'STRONG_SELL'
+  // 層二：進場時機分
+  timing_score: number
+  signal: PredictionSignal
   score_tech: number
   score_chip: number
   score_fund: number
@@ -318,6 +323,12 @@ export interface PredictionStock {
     revenue_yoy: number
     rsi14: number
     k_value: number
+    price_5d_chg: number
+    price_20d_chg: number
+    dev_ma20: number          // 距MA20乖離率 %
+    margin_change: number
+    timing_score: number
+    timing_warns: string[]    // 時機警示文字
   }
   close: number
   volume: number
