@@ -122,12 +122,61 @@ export interface RevenueData {
   revenue_yoy: number
 }
 
+export interface StockValuation {
+  per: number | null
+  pbr: number | null
+  dividend_yield: number | null
+}
+
 export interface StockDetailResponse {
   info: StockInfo
   realtime: RealtimeQuote
   kline: KlineBar[]
   chip: ChipData[]
   revenue: RevenueData[]
+  valuation: StockValuation | null
+}
+
+// Valuation list
+export interface ValuationStock {
+  stock_id: string
+  stock_name: string
+  industry: string | null
+  per: number | null
+  pbr: number | null
+  dividend_yield: number | null
+  close: number | null
+  volume: number | null
+  updated_at: string | null
+}
+
+// Chip Clean
+export interface ChipCleanStock {
+  stock_id: string
+  stock_name: string
+  industry: string
+  close: number
+  first_close: number
+  first_margin: number
+  last_margin: number
+  margin_chg_pct: number
+  price_chg_pct: number
+}
+
+// News Sentiment
+export interface NewsItem {
+  title: string
+  url: string
+  published: string
+  sentiment: 'positive' | 'negative' | 'neutral'
+  sentiment_score: number
+}
+
+export interface NewsSentimentResponse {
+  market_mood: 'bullish' | 'bearish' | 'neutral'
+  sentiment_summary: { positive: number; negative: number; neutral: number }
+  news: NewsItem[]
+  groq_enabled: boolean
 }
 
 // Search

@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react'
 import clsx from 'clsx'
 import { useOutletContext } from 'react-router-dom'
-import { Activity, Globe, Zap, Radio, AlertTriangle, Plus, Check } from 'lucide-react'
+import { Activity, Globe, Zap, Radio, AlertTriangle, Plus, Check, ExternalLink } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { usePredictionTop, useMacroIndicators } from '../hooks/usePrediction'
 import { useLiveQuotes } from '../hooks/useLiveQuotes'
 import { useSummary } from '../hooks/useSummary'
@@ -59,6 +60,20 @@ function ScoreBar({ label, score, color }: { label: string; score: number; color
       </div>
       <span className="text-[10px] font-mono w-7 text-right" style={{ color }}>{score}</span>
     </div>
+  )
+}
+
+// ── 跳詳情頁小圖示 ───────────────────────────────────────────────
+function StockDetailLink({ id }: { id: string }) {
+  const navigate = useNavigate()
+  return (
+    <button
+      title="開啟詳情頁"
+      onClick={(e) => { e.stopPropagation(); navigate(`/stock/${id}`) }}
+      className="text-tv-muted hover:text-tv-accent transition-colors"
+    >
+      <ExternalLink size={10} />
+    </button>
   )
 }
 
@@ -203,12 +218,15 @@ function StockScoreRow({ stock, onOpen, live, isMarketOpen }: {
           <div className="flex items-center gap-2">
             <QualityCircle score={stock.total_score} />
             <div>
-              <button
-                className="text-tv-accent font-mono text-xs font-semibold hover:underline"
-                onClick={(e) => { e.stopPropagation(); onOpen(stock.stock_id) }}
-              >
-                {stock.stock_id}
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  className="text-tv-accent font-mono text-xs font-semibold hover:underline"
+                  onClick={(e) => { e.stopPropagation(); onOpen(stock.stock_id) }}
+                >
+                  {stock.stock_id}
+                </button>
+                <StockDetailLink id={stock.stock_id} />
+              </div>
               <div className="text-[11px] text-tv-text leading-tight">{stock.stock_name}</div>
               <div className="text-[10px] text-tv-muted">{stock.industry}</div>
             </div>

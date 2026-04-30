@@ -17,6 +17,8 @@ import {
   ChevronRight,
   Zap,
   Wallet,
+  PieChart,
+  Newspaper,
 } from 'lucide-react'
 import { useState } from 'react'
 import clsx from 'clsx'
@@ -61,6 +63,8 @@ const navItems: NavItem[] = [
   { label: '融資警示', path: '/margin', icon: <AlertTriangle size={16} /> },
   { label: '策略回測', path: '/backtest', icon: <FlaskConical size={16} /> },
   { label: 'AI 模擬盤驗證', path: '/paper-trade', icon: <FlaskConical size={16} /> },
+  { label: '估值分析', path: '/valuation', icon: <PieChart size={16} /> },
+  { label: '新聞情緒', path: '/news', icon: <Newspaper size={16} /> },
   { label: '我的投資組合', path: '/portfolio', icon: <Wallet size={16} /> },
 ]
 

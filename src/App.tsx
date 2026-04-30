@@ -20,6 +20,9 @@ import BacktestPage from './pages/BacktestPage'
 import PredictionPage from './pages/PredictionPage'
 import PortfolioPage from './pages/PortfolioPage'
 import PaperTradePage from './pages/PaperTradePage'
+import StockDetailPage from './pages/StockDetailPage'
+import ValuationPage from './pages/ValuationPage'
+import NewsPage from './pages/NewsPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -141,6 +144,21 @@ export default function App() {
             <Route path="portfolio" element={
               <Suspense fallback={<PageFallback />}>
                 <PortfolioPage />
+              </Suspense>
+            } />
+            <Route path="valuation" element={
+              <Suspense fallback={<PageFallback />}>
+                <ValuationPage />
+              </Suspense>
+            } />
+            <Route path="news" element={
+              <Suspense fallback={<PageFallback />}>
+                <NewsPage />
+              </Suspense>
+            } />
+            <Route path="stock/:id" element={
+              <Suspense fallback={<PageFallback />}>
+                <StockDetailPage />
               </Suspense>
             } />
             <Route path="*" element={<Navigate to="/" replace />} />
