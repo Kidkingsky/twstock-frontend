@@ -60,6 +60,7 @@ const navItems: NavItem[] = [
   { label: '分點追蹤', path: '/broker', icon: <Users size={16} /> },
   { label: '融資警示', path: '/margin', icon: <AlertTriangle size={16} /> },
   { label: '策略回測', path: '/backtest', icon: <FlaskConical size={16} /> },
+  { label: 'AI 模擬盤驗證', path: '/paper-trade', icon: <FlaskConical size={16} /> },
   { label: '我的投資組合', path: '/portfolio', icon: <Wallet size={16} /> },
 ]
 

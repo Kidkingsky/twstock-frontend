@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react'
 import clsx from 'clsx'
 import { useOutletContext } from 'react-router-dom'
-import { Activity, Globe, Zap, Radio, AlertTriangle } from 'lucide-react'
+import { Activity, Globe, Zap, Radio, AlertTriangle, Plus, Check } from 'lucide-react'
 import { usePredictionTop, useMacroIndicators } from '../hooks/usePrediction'
 import { useLiveQuotes } from '../hooks/useLiveQuotes'
 import { useSummary } from '../hooks/useSummary'
+import { useAddPaperTrade } from '../hooks/usePaperTrade'
 import { fmt, fmtPct, fmtVol, priceColor } from '../utils/formatters'
 import type { PredictionStock, PredictionSignal, LiveQuote } from '../types/api'
 
@@ -127,6 +128,55 @@ function MacroCard() {
   )
 }
 
+// ── 加入模擬盤按鈕 ────────────────────────────────────────────────
+function AddPaperBtn({ stock, livePrice }: { stock: PredictionStock; livePrice?: number }) {
+  const { mutate, isPending, isSuccess } = useAddPaperTrade()
+  const [showMenu, setShowMenu] = useState(false)
+
+  const handleAdd = (days: number) => {
+    const price = livePrice ?? stock.close
+    mutate({
+      stock_id:     stock.stock_id,
+      entry_price:  price,
+      ai_score:     stock.total_score,
+      timing_score: stock.timing_score,
+      signal:       stock.signal,
+      hold_days:    days,
+      note:         `AI評分排行加入 品質${stock.total_score} 時機${stock.timing_score}`,
+    })
+    setShowMenu(false)
+  }
+
+  if (isSuccess) return (
+    <span className="flex items-center gap-1 text-[10px] text-tv-up">
+      <Check size={11} />已加入
+    </span>
+  )
+
+  return (
+    <div className="relative" onClick={e => e.stopPropagation()}>
+      <button
+        onClick={() => setShowMenu(v => !v)}
+        disabled={isPending}
+        className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] bg-tv-accent/10 text-tv-accent border border-tv-accent/30 hover:bg-tv-accent/20 transition-colors disabled:opacity-50"
+      >
+        <Plus size={10} />模擬
+      </button>
+      {showMenu && (
+        <div className="absolute right-0 top-full mt-1 z-50 bg-tv-card border border-tv-border rounded shadow-xl">
+          <p className="px-3 py-1.5 text-[10px] text-tv-muted border-b border-tv-border">持有天數</p>
+          {[3, 5, 10, 20].map(d => (
+            <button key={d} onClick={() => handleAdd(d)}
+              className="flex w-full items-center px-3 py-1.5 text-xs text-tv-text hover:bg-tv-border whitespace-nowrap">
+              {d} 天後驗證
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── 個股評分列 ───────────────────────────────────────────────────
 function StockScoreRow({ stock, onOpen, live, isMarketOpen }: {
   stock: PredictionStock
@@ -240,12 +290,17 @@ function StockScoreRow({ stock, onOpen, live, isMarketOpen }: {
             </span>
           ) : '-'}
         </td>
+
+        {/* 加入模擬盤 */}
+        <td className="px-3 py-2 text-center" onClick={e => e.stopPropagation()}>
+          <AddPaperBtn stock={stock} livePrice={live?.price} />
+        </td>
       </tr>
 
       {/* 展開詳情 */}
       {expanded && (
         <tr className="bg-tv-bg/60 border-b border-tv-border/30">
-          <td colSpan={8} className="px-4 py-3">
+          <td colSpan={9} className="px-4 py-3">
             <div className="flex gap-6 flex-wrap">
 
               {/* 品質分雷達 */}
@@ -510,6 +565,7 @@ export default function PredictionPage() {
                   <th className="px-3 py-2 text-tv-muted font-medium hidden md:table-cell">技/籌/基/總/動</th>
                   <th className="text-right px-3 py-2 text-tv-muted font-medium hidden lg:table-cell">成交量</th>
                   <th className="text-right px-3 py-2 text-tv-muted font-medium hidden lg:table-cell">距MA20</th>
+                  <th className="text-center px-3 py-2 text-tv-muted font-medium"></th>
                 </tr>
               </thead>
               <tbody>

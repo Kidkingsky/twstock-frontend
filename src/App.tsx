@@ -19,6 +19,7 @@ import MarginAlertPage from './pages/MarginAlertPage'
 import BacktestPage from './pages/BacktestPage'
 import PredictionPage from './pages/PredictionPage'
 import PortfolioPage from './pages/PortfolioPage'
+import PaperTradePage from './pages/PaperTradePage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -130,6 +131,11 @@ export default function App() {
             <Route path="prediction" element={
               <Suspense fallback={<PageFallback />}>
                 <PredictionPage />
+              </Suspense>
+            } />
+            <Route path="paper-trade" element={
+              <Suspense fallback={<PageFallback />}>
+                <PaperTradePage />
               </Suspense>
             } />
             <Route path="portfolio" element={
