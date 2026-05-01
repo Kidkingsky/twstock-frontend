@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
-import { X, ExternalLink } from 'lucide-react'
+import { X, ExternalLink, Sparkles, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
-import { useStockDetail } from '../../hooks/useStockDetail'
+import { useStockDetail, useStockAIAnalysis } from '../../hooks/useStockDetail'
 import { useFinancials } from '../../hooks/useFinancials'
 import { usePredictionStock } from '../../hooks/usePrediction'
 import KLineChart from '../charts/KLineChart'
@@ -38,8 +38,9 @@ function ScoreBar({ label, score, color }: { label: string; score: number; color
 export default function StockModal({ stockId, onClose }: StockModalProps) {
   const navigate = useNavigate()
   const { data: detail, isLoading: detailLoading } = useStockDetail(stockId)
-  const { data: financials } = useFinancials(stockId)
+  const { data: financials }   = useFinancials(stockId)
   const { data: scoreHistory } = usePredictionStock(stockId)
+  const { data: aiData, isFetching: aiLoading, refetch: fetchAI } = useStockAIAnalysis(stockId)
   const overlayRef = useRef<HTMLDivElement>(null)
 
   // 取最新評分
@@ -165,6 +166,51 @@ export default function StockModal({ stockId, onClose }: StockModalProps) {
               </div>
             </div>
           )}
+
+          {/* AI 白話解讀 */}
+          <div className="tv-card p-3">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5">
+                <Sparkles size={12} className="text-cyan-400" />
+                <span className="text-xs font-semibold text-tv-text">AI 白話解讀</span>
+                {aiData?.cached && <span className="text-[10px] text-tv-muted">（快取）</span>}
+              </div>
+              <button
+                onClick={() => fetchAI()}
+                disabled={aiLoading}
+                className={clsx(
+                  'flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium transition-colors',
+                  aiData
+                    ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20'
+                    : 'bg-tv-accent/10 text-tv-accent border border-tv-accent/30 hover:bg-tv-accent/20',
+                  aiLoading && 'opacity-60 cursor-not-allowed'
+                )}
+              >
+                {aiLoading
+                  ? <><Loader2 size={9} className="animate-spin" />分析中</>
+                  : <><Sparkles size={9} />{aiData ? '重新' : 'AI 解讀'}</>
+                }
+              </button>
+            </div>
+            {!aiData && !aiLoading && (
+              <p className="text-[10px] text-tv-muted">點擊按鈕，由 AI 整合技術面、籌碼面與新聞產生白話分析。</p>
+            )}
+            {aiLoading && (
+              <div className="flex items-center gap-2 py-2 text-[10px] text-tv-muted">
+                <Loader2 size={11} className="animate-spin text-cyan-400" />約需 5~15 秒…
+              </div>
+            )}
+            {aiData?.analysis && !aiLoading && (
+              <p className={clsx(
+                'text-[11px] leading-relaxed p-2 rounded border',
+                aiData.enabled
+                  ? 'border-cyan-500/20 bg-cyan-500/5 text-tv-text'
+                  : 'border-tv-border text-tv-muted'
+              )}>
+                {aiData.analysis}
+              </p>
+            )}
+          </div>
 
           {/* K-Line Chart */}
           <div className="tv-card p-3">

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
-import { ArrowLeft, RefreshCw, TrendingUp, TrendingDown, Minus } from 'lucide-react'
-import { useStockDetail } from '../hooks/useStockDetail'
+import { ArrowLeft, RefreshCw, Sparkles, Loader2 } from 'lucide-react'
+import { useStockDetail, useStockAIAnalysis } from '../hooks/useStockDetail'
 import { useFinancials } from '../hooks/useFinancials'
 import { usePredictionStock } from '../hooks/usePrediction'
 import StockFullChart from '../components/charts/StockFullChart'
@@ -53,8 +53,9 @@ export default function StockDetailPage() {
   const [tab, setTab]   = useState<'chip' | 'revenue' | 'financials'>('chip')
 
   const { data: detail, isLoading, refetch } = useStockDetail(id ?? null)
-  const { data: financials }  = useFinancials(id ?? null)
+  const { data: financials }   = useFinancials(id ?? null)
   const { data: scoreHistory } = usePredictionStock(id ?? null)
+  const { data: aiData, isFetching: aiLoading, refetch: fetchAI } = useStockAIAnalysis(id ?? null)
 
   const latestScore = Array.isArray(scoreHistory) && scoreHistory.length > 0
     ? scoreHistory[scoreHistory.length - 1]
@@ -205,6 +206,60 @@ export default function StockDetailPage() {
           </div>
         </div>
       )}
+
+      {/* ── AI 白話解讀 ── */}
+      <div className="tv-card p-3">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Sparkles size={13} className="text-cyan-400" />
+            <span className="text-xs font-semibold text-tv-text">AI 白話解讀</span>
+            <span className="text-[10px] text-tv-muted bg-tv-border px-1.5 py-0.5 rounded">Groq LLaMA-3.3-70B</span>
+            {aiData?.cached && (
+              <span className="text-[10px] text-tv-muted">（快取）</span>
+            )}
+          </div>
+          <button
+            onClick={() => fetchAI()}
+            disabled={aiLoading}
+            className={clsx(
+              'flex items-center gap-1.5 px-3 py-1 rounded text-[11px] font-medium transition-colors',
+              aiData
+                ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20'
+                : 'bg-tv-accent text-white hover:bg-tv-accent/80',
+              aiLoading && 'opacity-60 cursor-not-allowed'
+            )}
+          >
+            {aiLoading
+              ? <><Loader2 size={11} className="animate-spin" />分析中…</>
+              : <><Sparkles size={11} />{aiData ? '重新解讀' : '🤖 AI 解讀'}</>
+            }
+          </button>
+        </div>
+
+        {!aiData && !aiLoading && (
+          <p className="text-[11px] text-tv-muted py-2">
+            點擊「AI 解讀」按鈕，由 Groq LLaMA 整合技術面、籌碼面、近期新聞，產生個股白話分析。
+          </p>
+        )}
+
+        {aiLoading && (
+          <div className="flex items-center gap-2 py-4 text-[11px] text-tv-muted">
+            <Loader2 size={14} className="animate-spin text-cyan-400" />
+            正在整合資料並呼叫 Groq 模型，約需 5~15 秒…
+          </div>
+        )}
+
+        {aiData?.analysis && !aiLoading && (
+          <div className={clsx(
+            'mt-1 p-3 rounded border text-[12px] leading-relaxed',
+            aiData.enabled
+              ? 'border-cyan-500/25 bg-cyan-500/5 text-tv-text'
+              : 'border-tv-border bg-tv-bg text-tv-muted'
+          )}>
+            {aiData.analysis}
+          </div>
+        )}
+      </div>
 
       {/* ── K 線圖（含 Volume / MACD / RSI）── */}
       <div className="tv-card overflow-hidden">
