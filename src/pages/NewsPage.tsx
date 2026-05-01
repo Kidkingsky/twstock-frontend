@@ -16,13 +16,13 @@ function MoodIcon({ mood }: { mood: 'bullish' | 'bearish' | 'neutral' }) {
   return <Minus size={18} className="text-tv-muted" />
 }
 
-function SentimentBadge({ s }: { s: 'positive' | 'negative' | 'neutral' }) {
-  const map = {
+function SentimentBadge({ s }: { s: 'positive' | 'negative' | 'neutral' | string }) {
+  const map: Record<string, { label: string; cls: string }> = {
     positive: { label: '看多', cls: 'bg-tv-up/15 text-tv-up' },
     negative: { label: '看空', cls: 'bg-tv-down/15 text-tv-down' },
     neutral:  { label: '中立', cls: 'bg-tv-border text-tv-muted' },
   }
-  const { label, cls } = map[s]
+  const { label, cls } = map[s] ?? map['neutral']
   return (
     <span className={clsx('text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0', cls)}>
       {label}
