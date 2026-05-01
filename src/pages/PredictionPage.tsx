@@ -79,12 +79,13 @@ function StockDetailLink({ id }: { id: string }) {
 
 // ── 信號標籤 ──────────────────────────────────────────────────────
 const SIGNAL_MAP: Record<PredictionSignal, { label: string; cls: string }> = {
-  STRONG_BUY:  { label: '強買',   cls: 'bg-tv-up/20 text-tv-up border border-tv-up/40' },
-  BUY:         { label: '買入',   cls: 'bg-tv-up/10 text-tv-up/80 border border-tv-up/20' },
-  WATCH:       { label: '強但熱', cls: 'bg-amber-500/20 text-amber-400 border border-amber-500/40' },
-  NEUTRAL:     { label: '中性',   cls: 'bg-tv-border text-tv-muted border border-tv-border' },
-  SELL:        { label: '賣出',   cls: 'bg-tv-down/10 text-tv-down/80 border border-tv-down/20' },
-  STRONG_SELL: { label: '強賣',   cls: 'bg-tv-down/20 text-tv-down border border-tv-down/40' },
+  STRONG_BUY:   { label: '強買',   cls: 'bg-tv-up/20 text-tv-up border border-tv-up/40' },
+  BUY:          { label: '買入',   cls: 'bg-tv-up/10 text-tv-up/80 border border-tv-up/20' },
+  WATCH:        { label: '強但熱', cls: 'bg-amber-500/20 text-amber-400 border border-amber-500/40' },
+  ACCUMULATING: { label: '蓄積中', cls: 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40' },
+  NEUTRAL:      { label: '中性',   cls: 'bg-tv-border text-tv-muted border border-tv-border' },
+  SELL:         { label: '賣出',   cls: 'bg-tv-down/10 text-tv-down/80 border border-tv-down/20' },
+  STRONG_SELL:  { label: '強賣',   cls: 'bg-tv-down/20 text-tv-down border border-tv-down/40' },
 }
 
 function SignalBadge({ signal }: { signal: PredictionSignal }) {
@@ -202,7 +203,8 @@ function StockScoreRow({ stock, onOpen, live, isMarketOpen }: {
   const [expanded, setExpanded] = useState(false)
   const timingScore = stock.timing_score ?? 50
   const warns = stock.details?.timing_warns ?? []
-  const isWatch = stock.signal === 'WATCH'
+  const isWatch       = stock.signal === 'WATCH'
+  const isAccumulating = stock.signal === 'ACCUMULATING'
 
   return (
     <>
@@ -442,6 +444,61 @@ function StockScoreRow({ stock, onOpen, live, isMarketOpen }: {
                   </p>
                 </div>
               )}
+
+              {/* 蓄積中說明框 */}
+              {isAccumulating && (
+                <div className="w-full mt-1 p-3 rounded border border-cyan-500/30 bg-cyan-500/5 text-[11px]">
+                  <p className="font-semibold mb-2 text-cyan-400">🔵 蓄積中 — 法人悄悄進場，股價尚未反應</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-2">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10px] text-tv-muted">外資5日累計</span>
+                      <span className={clsx('font-mono text-xs font-semibold',
+                        (stock.details?.foreign_net_5d ?? 0) > 0 ? 'text-tv-up' : 'text-tv-down'
+                      )}>
+                        {((stock.details?.foreign_net_5d ?? 0) >= 0 ? '+' : '')}
+                        {(stock.details?.foreign_net_5d ?? 0).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10px] text-tv-muted">投信5日累計</span>
+                      <span className={clsx('font-mono text-xs font-semibold',
+                        (stock.details?.trust_net_5d ?? 0) > 0 ? 'text-tv-up' : 'text-tv-down'
+                      )}>
+                        {((stock.details?.trust_net_5d ?? 0) >= 0 ? '+' : '')}
+                        {(stock.details?.trust_net_5d ?? 0).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10px] text-tv-muted">外資買超天數</span>
+                      <span className="font-mono text-xs font-semibold text-cyan-400">
+                        {stock.details?.foreign_buy_days ?? 0} / 5 天
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10px] text-tv-muted">量能趨勢</span>
+                      <span className={clsx('font-mono text-xs font-semibold',
+                        (stock.details?.vol_trend_ratio ?? 1) >= 1.15 ? 'text-tv-up' : 'text-tv-muted'
+                      )}>
+                        {((stock.details?.vol_trend_ratio ?? 1) * 100 - 100).toFixed(0)}%
+                        {(stock.details?.vol_trend_ratio ?? 1) >= 1.15 ? ' ↑溫和放大' : ''}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[10px] text-tv-muted">蓄積分</span>
+                    <div className="flex-1 h-1.5 bg-tv-border rounded-full overflow-hidden max-w-[120px]">
+                      <div className="h-full rounded-full bg-cyan-500"
+                        style={{ width: `${stock.score_accumulate ?? 0}%` }} />
+                    </div>
+                    <span className="text-[10px] font-mono font-bold text-cyan-400">
+                      {stock.score_accumulate ?? 0}
+                    </span>
+                  </div>
+                  <p className="text-cyan-400/60 mt-2">
+                    法人持續買進但股價尚未拉升，屬於「低調積累」階段。位置未過熱，可考慮提前布局，等待放量突破。
+                  </p>
+                </div>
+              )}
             </div>
           </td>
         </tr>
@@ -453,14 +510,15 @@ function StockScoreRow({ stock, onOpen, live, isMarketOpen }: {
 // ── 主頁面 ───────────────────────────────────────────────────────
 type OutletCtx = { openStock: (id: string) => void }
 
-const SIGNALS = ['', 'STRONG_BUY', 'BUY', 'WATCH', 'NEUTRAL', 'SELL'] as const
+const SIGNALS = ['', 'STRONG_BUY', 'BUY', 'WATCH', 'ACCUMULATING', 'NEUTRAL', 'SELL'] as const
 const SIGNAL_LABELS: Record<string, string> = {
-  '':          '全部',
-  STRONG_BUY:  '強買',
-  BUY:         '買入',
-  WATCH:       '強但熱',
-  NEUTRAL:     '中性',
-  SELL:        '賣出',
+  '':           '全部',
+  STRONG_BUY:   '強買',
+  BUY:          '買入',
+  WATCH:        '強但熱',
+  ACCUMULATING: '蓄積中',
+  NEUTRAL:      '中性',
+  SELL:         '賣出',
 }
 
 export default function PredictionPage() {
@@ -471,9 +529,12 @@ export default function PredictionPage() {
   const { data: summary } = useSummary()
   const isMarketOpen = summary?.market_open ?? false
 
+  // 蓄積中的品質分門檻較低（48），自動調整避免篩掉
+  const effectiveMinScore = signal === 'ACCUMULATING' ? Math.min(minScore, 45) : minScore
+
   const { data: stocks, isLoading } = usePredictionTop({
     signal: signal || undefined,
-    minScore,
+    minScore: effectiveMinScore,
     limit: 100,
   })
 
@@ -484,6 +545,7 @@ export default function PredictionPage() {
   const watchCount  = useMemo(() => (stocks ?? []).filter(s => s.signal === 'WATCH').length, [stocks])
   const strongCount = useMemo(() => (stocks ?? []).filter(s => s.signal === 'STRONG_BUY').length, [stocks])
   const buyCount    = useMemo(() => (stocks ?? []).filter(s => s.signal === 'BUY').length, [stocks])
+  const accumCount  = useMemo(() => (stocks ?? []).filter(s => s.signal === 'ACCUMULATING').length, [stocks])
 
   return (
     <div className="flex flex-col gap-3 p-2">
@@ -506,6 +568,7 @@ export default function PredictionPage() {
             <span className="text-tv-up">強買 {strongCount}</span>
             <span className="text-blue-400">買入 {buyCount}</span>
             <span className="text-amber-400">強但熱 {watchCount}</span>
+            <span className="text-cyan-400">蓄積中 {accumCount}</span>
             <span className="text-tv-muted">共 {stocks.length} 支</span>
           </div>
         )}
@@ -536,8 +599,12 @@ export default function PredictionPage() {
               className={clsx(
                 'px-2.5 py-1 rounded text-xs transition-colors whitespace-nowrap',
                 signal === s
-                  ? s === 'WATCH' ? 'bg-amber-500 text-white' : 'bg-tv-accent text-white'
-                  : s === 'WATCH' ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20' : 'bg-tv-border text-tv-muted hover:text-tv-text'
+                  ? s === 'WATCH'        ? 'bg-amber-500 text-white'
+                  : s === 'ACCUMULATING' ? 'bg-cyan-600 text-white'
+                  : 'bg-tv-accent text-white'
+                  : s === 'WATCH'        ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20'
+                  : s === 'ACCUMULATING' ? 'bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20'
+                  : 'bg-tv-border text-tv-muted hover:text-tv-text'
               )}
             >
               {SIGNAL_LABELS[s]}
