@@ -8,6 +8,16 @@ import { usePredictionStock } from '../../hooks/usePrediction'
 import KLineChart from '../charts/KLineChart'
 import { fmt, fmtPct, fmtVol, fmtRevenue, priceColor } from '../../utils/formatters'
 
+const SIGNAL_BADGE_MAP: Record<string, { label: string; cls: string }> = {
+  STRONG_BUY:   { label: '強買',   cls: 'bg-tv-up/20 text-tv-up' },
+  BUY:          { label: '買入',   cls: 'bg-tv-up/10 text-tv-up/80' },
+  WATCH:        { label: '強但熱', cls: 'bg-amber-500/20 text-amber-400' },
+  ACCUMULATING: { label: '蓄積中', cls: 'bg-cyan-500/20 text-cyan-400' },
+  NEUTRAL:      { label: '中性',   cls: 'bg-tv-border text-tv-muted' },
+  SELL:         { label: '賣出',   cls: 'bg-tv-down/10 text-tv-down/80' },
+  STRONG_SELL:  { label: '強賣',   cls: 'bg-tv-down/20 text-tv-down' },
+}
+
 interface StockModalProps {
   stockId: string
   onClose: () => void
@@ -64,6 +74,7 @@ export default function StockModal({ stockId, onClose }: StockModalProps) {
   const info = detail?.info
   const changePct = rt?.change_pct ?? 0
   const changeColor = priceColor(changePct)
+  const latestSignal = latestScore?.signal ? SIGNAL_BADGE_MAP[latestScore.signal] : null
 
   return (
     <div
@@ -148,12 +159,9 @@ export default function StockModal({ stockId, onClose }: StockModalProps) {
                   </span>
                   <span className={clsx(
                     'text-[10px] px-1.5 py-0.5 rounded',
-                    latestScore.signal === 'STRONG_BUY' ? 'bg-tv-up/20 text-tv-up' :
-                    latestScore.signal === 'BUY' ? 'bg-tv-up/10 text-tv-up/80' :
-                    latestScore.signal === 'SELL' ? 'bg-tv-down/10 text-tv-down/80' :
-                    'bg-tv-border text-tv-muted'
+                    latestSignal?.cls ?? 'bg-tv-border text-tv-muted'
                   )}>
-                    {{ STRONG_BUY: '強買', BUY: '買入', NEUTRAL: '中性', SELL: '賣出', STRONG_SELL: '強賣' }[latestScore.signal as string] ?? latestScore.signal}
+                    {latestSignal?.label ?? latestScore.signal}
                   </span>
                 </div>
               </div>

@@ -6,11 +6,13 @@ import { fmt, fmtPct, priceColor } from '../utils/formatters'
 
 // ── 訊號顏色 ─────────────────────────────────────────────────────
 const SIGNAL_LABEL: Record<string, { label: string; cls: string }> = {
-  STRONG_BUY:  { label: '強買',   cls: 'bg-tv-up/20 text-tv-up border-tv-up/30' },
-  BUY:         { label: '買入',   cls: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-  WATCH:       { label: '強但熱', cls: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
-  NEUTRAL:     { label: '中性',   cls: 'bg-tv-border text-tv-muted border-tv-border' },
-  SELL:        { label: '賣出',   cls: 'bg-tv-down/20 text-tv-down border-tv-down/30' },
+  STRONG_BUY:   { label: '強買',   cls: 'bg-tv-up/20 text-tv-up border-tv-up/30' },
+  BUY:          { label: '買入',   cls: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+  WATCH:        { label: '強但熱', cls: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
+  ACCUMULATING: { label: '蓄積中', cls: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' },
+  NEUTRAL:      { label: '中性',   cls: 'bg-tv-border text-tv-muted border-tv-border' },
+  SELL:         { label: '賣出',   cls: 'bg-tv-down/20 text-tv-down border-tv-down/30' },
+  STRONG_SELL:  { label: '強賣',   cls: 'bg-tv-down/30 text-tv-down border-tv-down/40' },
 }
 
 function SignalTag({ signal }: { signal: string | null }) {

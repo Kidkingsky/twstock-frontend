@@ -8,6 +8,16 @@ import { usePredictionStock } from '../hooks/usePrediction'
 import StockFullChart from '../components/charts/StockFullChart'
 import { fmt, fmtPct, fmtVol, fmtRevenue, priceColor } from '../utils/formatters'
 
+const SIGNAL_BADGE_MAP: Record<string, { label: string; cls: string }> = {
+  STRONG_BUY:   { label: '強買',   cls: 'bg-tv-up/20 text-tv-up' },
+  BUY:          { label: '買入',   cls: 'bg-tv-up/10 text-tv-up/80' },
+  WATCH:        { label: '強但熱', cls: 'bg-amber-500/20 text-amber-400' },
+  ACCUMULATING: { label: '蓄積中', cls: 'bg-cyan-500/20 text-cyan-400' },
+  NEUTRAL:      { label: '中性',   cls: 'bg-tv-border text-tv-muted' },
+  SELL:         { label: '賣出',   cls: 'bg-tv-down/10 text-tv-down/80' },
+  STRONG_SELL:  { label: '強賣',   cls: 'bg-tv-down/20 text-tv-down' },
+}
+
 // ── 工具函式 ─────────────────────────────────────────────────────
 function StatCard({ label, value, sub, color }: {
   label: string; value: string; sub?: string; color?: string
@@ -67,10 +77,7 @@ export default function StockDetailPage() {
   const changePct  = rt?.change_pct ?? 0
   const changeColor = priceColor(changePct)
 
-  const signalLabel: Record<string, string> = {
-    STRONG_BUY: '強買', BUY: '買入', WATCH: '觀察',
-    NEUTRAL: '中性', SELL: '賣出', STRONG_SELL: '強賣',
-  }
+  const latestSignal = latestScore?.signal ? SIGNAL_BADGE_MAP[latestScore.signal] : null
 
   return (
     <div className="flex flex-col gap-3 max-w-5xl mx-auto">
@@ -143,13 +150,9 @@ export default function StockDetailPage() {
                 {latestScore.signal && (
                   <span className={clsx(
                     'text-xs font-bold px-2 py-1 rounded',
-                    latestScore.signal === 'STRONG_BUY' ? 'bg-tv-up/20 text-tv-up' :
-                    latestScore.signal === 'BUY'        ? 'bg-tv-up/10 text-tv-up/80' :
-                    latestScore.signal === 'WATCH'      ? 'bg-yellow-500/20 text-yellow-400' :
-                    latestScore.signal === 'SELL'       ? 'bg-tv-down/10 text-tv-down/80' :
-                    'bg-tv-border text-tv-muted'
+                    latestSignal?.cls ?? 'bg-tv-border text-tv-muted'
                   )}>
-                    {signalLabel[latestScore.signal] ?? latestScore.signal}
+                    {latestSignal?.label ?? latestScore.signal}
                   </span>
                 )}
               </div>
